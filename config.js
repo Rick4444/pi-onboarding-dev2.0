@@ -84,5 +84,10 @@ window.PI_CONFIG = {
   HONEYPOT: true,
 
   /* Lets the site open again with no connection after the first visit (see sw.js). Works on https only. */
-  SERVICE_WORKER: true
+  SERVICE_WORKER: true,
+
+  /* Live "people online / filling the form" counter (see presence.js and PRESENCE-SETUP.md).
+     Leave DB_URL empty to keep it switched off. Example: "https://your-project-default-rtdb.firebaseio.com"
+     HEARTBEAT_MS  how often each open page reports in (30 seconds is plenty). */
+  PRESENCE: { DB_URL: "https://picommerce-4c145-default-rtdb.asia-southeast1.firebasedatabase.app", HEARTBEAT_MS: 30000 }
 };
