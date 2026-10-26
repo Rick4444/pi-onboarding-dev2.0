@@ -800,3 +800,11 @@ html{font-size:93.75%}
  .topbar #langhost{margin-left:auto}
  main{padding-top:22px}
 }
+
+/* live visitor counter in the top bar (hidden until presence.js has a number) */
+.presence{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 12px;border-radius:99px;background:#eef3fc;border:1px solid #dbe5f6;color:#25406f;font:600 .8rem/1.2 var(--body);white-space:nowrap}
+.presence[hidden]{display:none}
+.presence i{width:8px;height:8px;border-radius:50%;background:#1d5fd0;animation:ping3 2.4s infinite}
+.presence .pr-f{padding-left:8px;border-left:1px solid #c5d3ee;color:#0b6b3b}
+@media (max-width:820px){.presence{font-size:.78rem}}
+@media (prefers-reduced-motion:reduce){.presence i{animation:none}}

@@ -15,7 +15,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- Security policy: only this site's own scripts run; the page may talk only to Google (forms, Apps Script, fonts). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://docs.google.com https://script.google.com https://script.googleusercontent.com; form-action https://docs.google.com; frame-src 'none'; object-src 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app https://docs.google.com https://script.google.com https://script.googleusercontent.com; form-action https://docs.google.com; frame-src 'none'; object-src 'none'; base-uri 'none'">
 <!-- STAGING COPY: hidden from search engines. Remove this line when this version goes live. -->
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -29,10 +29,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=d1">
-<script src="config.js?v=d1" defer></script>
-<script src="messages.js?v=d1" defer></script>
-<script src="app.js?v=d1" defer></script>
+<link rel="stylesheet" href="styles.css?v=d2">
+<script src="config.js?v=d2" defer></script>
+<script src="messages.js?v=d2" defer></script>
+<script src="app.js?v=d2" defer></script>
+<script src="presence.js?v=d2" defer></script>
 </head>
 <body>
 <!-- Connection banner: shown by app.js when the device goes offline, comes back, or the network is slow. Text is filled from messages.js. -->
@@ -71,10 +72,10 @@
  </div>
  <p class="rhelp" data-i18n="footer.help"></p>
  <!-- STAGING build label: remove this line when this version goes live -->
- <small class="bld">build dev 1</small>
+ <small class="bld">build dev 2</small>
 </div></header>
 <div class="stage">
- <div class="topbar"><span class="live"><i></i><span data-i18n="intro.live"></span></span><span class="eta" data-i18n="intro.eta"></span><span id="langhost"></span></div>
+ <div class="topbar"><span class="live"><i></i><span data-i18n="intro.live"></span></span><span class="presence" id="presence" hidden aria-live="polite"><i aria-hidden="true"></i><span class="pr-n"></span><span class="pr-f" hidden></span></span><span class="eta" data-i18n="intro.eta"></span><span id="langhost"></span></div>
 
 <!-- Main area: step 1 business form (built by app.js), step 2 channel tabs and forms, and the progress side panel -->
 <main id="main"><div class="wrap">
