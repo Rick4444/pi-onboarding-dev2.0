@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<!--
+  Paytm Intelligence client onboarding portal.
+  Files (keep all in one folder):
+    index.html    this page: static layout only. All visible words come from messages.js.
+    messages.js   every on-screen message, in English, Hindi and Bangla
+    config.js     form IDs, entry IDs, network and feature settings (the file you normally edit)
+    app.js        forms, validation, connection handling and submission
+    styles.css    all styling
+    sw.js         lets the site open again after a connection loss
+  Release: change the ?v= number on the three links below, and CACHE in sw.js.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Security policy: only this site's own scripts run; the page may talk only to Google (forms, Apps Script, fonts). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://docs.google.com https://script.google.com https://script.googleusercontent.com; form-action https://docs.google.com; frame-src 'none'; object-src 'none'; base-uri 'none'">
+<!-- STAGING COPY: hidden from search engines. Remove this line when this version goes live. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title data-i18n="meta.title">Client Onboarding | Paytm Intelligence</title>
+<meta name="description" data-i18n-attr="content:meta.description" content="Onboard to Paytm Intelligence on WhatsApp, SMS or RCS. Complete the form for your channel and our team will get back to you.">
+<meta name="theme-color" content="#001f5c">
+<meta property="og:type" content="website">
+<meta property="og:title" data-i18n-attr="content:meta.title" content="Client Onboarding | Paytm Intelligence">
+<meta property="og:description" data-i18n-attr="content:meta.ogDescription" content="Complete the onboarding questionnaire for WhatsApp, SMS or RCS.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23002e6e'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%2300b9f5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=d1">
+<script src="config.js?v=d1" defer></script>
+<script src="messages.js?v=d1" defer></script>
+<script src="app.js?v=d1" defer></script>
+</head>
+<body>
+<!-- Connection banner: shown by app.js when the device goes offline, comes back, or the network is slow. Text is filled from messages.js. -->
+<div class="net" id="net" role="status" aria-live="polite" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.8a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16.2a5 5 0 0 1 7 0M12 20h.01"/><path class="slash" d="M3 3l18 18"/></svg><div><strong id="net-t"></strong><span id="net-x"></span></div></div>
+<noscript><div style="padding:16px;text-align:center;background:#fff3cd;color:#664d03;font:16px system-ui,sans-serif">Please enable JavaScript to use the onboarding form.</div></noscript>
+<a class="skip" href="#main" data-i18n="skip"></a>
+<!-- Sticky progress bar: appears after the customer scrolls past the header; chips are built by app.js (paint) -->
+<nav class="sbar" id="sbar" data-i18n-attr="aria-label:prog.title" aria-hidden="true"><div class="wrap sb-in"><span class="sb-t" data-i18n="prog.title"></span><ul class="sb-chips" id="sb-chips"></ul><span class="sb-pct" id="sb-pct"></span></div><i class="sb-m"><i id="sb-bar"></i></i></nav>
+<!-- Split-screen layout. Left: fixed brand rail (logo, welcome, steps, progress, animated Pi graphic). Right: the forms. -->
+<div class="shell">
+<header class="rail" id="rail"><div class="rail-in">
+ <!-- Logo links to the Pi website. Opens in a new tab so a customer never loses the form they are filling. Change the address here. -->
+ <a class="logo" id="logo" href="https://pi.global/" target="_blank" rel="noopener" data-i18n-attr="aria-label:logo.alt"><span class="pi">Pi</span><span class="by"><span data-i18n="logo.by"></span> <b>PAYTM</b></span></a>
+ <h1 data-i18n="intro.title"></h1>
+ <p class="lead" data-i18n="intro.text"></p>
+ <!-- Three-step list: app.js marks each step done / current as the customer progresses -->
+ <ol class="hsteps" id="hsteps">
+  <li><b aria-hidden="true"></b><span><strong data-i18n="intro.s1"></strong><small data-i18n="next.1.text"></small></span></li>
+  <li><b aria-hidden="true"></b><span><strong data-i18n="intro.s2"></strong><small data-i18n="next.2.text"></small></span></li>
+  <li><b aria-hidden="true"></b><span><strong data-i18n="intro.s3"></strong><small data-i18n="next.3.text"></small></span></li>
+ </ol>
+ <div class="rprog"><h4 data-i18n="prog.title"></h4><div class="meter" role="progressbar" data-i18n-attr="aria-label:prog.meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="meter"><i id="bar"></i></div><p class="count" id="count" aria-live="polite"></p><ul class="chk" id="chk"></ul></div>
+ <div class="art" aria-hidden="true">
+  <svg class="scene" viewBox="0 0 320 320" focusable="false">
+   <defs><radialGradient id="cg" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#d9f7ff"/><stop offset=".45" stop-color="#00b9f5"/><stop offset="1" stop-color="#1d5fd0"/></radialGradient><radialGradient id="bgc" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#00b9f5" stop-opacity=".22"/><stop offset=".7" stop-color="#0a4aa6" stop-opacity=".12"/><stop offset="1" stop-color="#ffffff" stop-opacity=".04"/></radialGradient></defs>
+   <circle class="big" cx="160" cy="160" r="150" fill="url(#bgc)"/>
+   <g class="arcg"><circle cx="160" cy="160" r="150" fill="none" stroke="#00b9f5" stroke-width="3" stroke-linecap="round" stroke-dasharray="150 800"/></g>
+   <circle cx="160" cy="160" r="60" fill="none" stroke="rgba(255,255,255,.12)"/>
+   <g class="ringg"><circle cx="160" cy="160" r="100" fill="none" stroke="rgba(255,255,255,.28)" stroke-dasharray="3 7"/><circle cx="160" cy="60" r="3.5" fill="#fff" opacity=".85"/></g>
+   <path id="l1" class="ln" d="M160 160L89.3 89.3"/><path id="l2" class="ln" d="M160 160L230.7 89.3"/><path id="l3" class="ln" d="M160 160L230.7 230.7"/><path id="l4" class="ln" d="M160 160L89.3 230.7"/>
+   <circle r="4" fill="#25d366"><animateMotion dur="2.4s" begin="0.0s" repeatCount="indefinite"><mpath href="#l1"/></animateMotion></circle><circle r="4" fill="#25d366" opacity=".6"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite"><mpath href="#l1"/></animateMotion></circle><circle r="4" fill="#6b95ff"><animateMotion dur="2.4s" begin="0.6s" repeatCount="indefinite"><mpath href="#l2"/></animateMotion></circle><circle r="4" fill="#6b95ff" opacity=".6"><animateMotion dur="2.4s" begin="1.8s" repeatCount="indefinite"><mpath href="#l2"/></animateMotion></circle><circle r="4" fill="#ffb547"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite"><mpath href="#l3"/></animateMotion></circle><circle r="4" fill="#ffb547" opacity=".6"><animateMotion dur="2.4s" begin="2.4s" repeatCount="indefinite"><mpath href="#l3"/></animateMotion></circle><circle r="4" fill="#f472b6"><animateMotion dur="2.4s" begin="1.8s" repeatCount="indefinite"><mpath href="#l4"/></animateMotion></circle><circle r="4" fill="#f472b6" opacity=".6"><animateMotion dur="2.4s" begin="3.0s" repeatCount="indefinite"><mpath href="#l4"/></animateMotion></circle>
+   <g class="nd" style="--c:#25d366;--d:-0.0s" transform="translate(89.3 89.3)"><circle class="halo" r="22"/><circle class="bg" r="22"/><g transform="translate(-10 -10) scale(.84)" fill="none" stroke="#25d366" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.3-4.2A8 8 0 1 1 8.4 18.8z"/></g><text y="39" text-anchor="middle" data-i18n="tab.whatsapp"></text></g><g class="nd" style="--c:#6b95ff;--d:-0.7s" transform="translate(230.7 89.3)"><circle class="halo" r="22"/><circle class="bg" r="22"/><g transform="translate(-10 -10) scale(.84)" fill="none" stroke="#6b95ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="3"/><path d="M8 17v3l4-3"/></g><text y="39" text-anchor="middle" data-i18n="tab.rcs"></text></g><g class="nd" style="--c:#ffb547;--d:-1.4s" transform="translate(230.7 230.7)"><circle class="halo" r="22"/><circle class="bg" r="22"/><g transform="translate(-10 -10) scale(.84)" fill="none" stroke="#ffb547" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></g><text y="39" text-anchor="middle" data-i18n="tab.sms"></text></g><g class="nd" style="--c:#f472b6;--d:-2.1s" transform="translate(89.3 230.7)"><circle class="halo" r="22"/><circle class="bg" r="22"/><g transform="translate(-10 -10) scale(.84)" fill="none" stroke="#f472b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></g><text y="39" text-anchor="middle" data-i18n="node.voice"></text></g>
+   <g class="corew"><circle class="chalo" cx="160" cy="160" r="32"/><circle cx="160" cy="160" r="31" fill="url(#cg)"/><text x="160" y="169" text-anchor="middle" class="pitx">Pi</text></g>
+   <circle class="sp" cx="125" cy="42" r="2.5"/><circle class="sp s2" cx="52" cy="160" r="2"/><circle class="sp s3" cx="268" cy="160" r="2.5"/><circle class="sp s4" cx="200" cy="282" r="2"/>
+  </svg>
+ </div>
+ <p class="rhelp" data-i18n="footer.help"></p>
+ <!-- STAGING build label: remove this line when this version goes live -->
+ <small class="bld">build dev 1</small>
+</div></header>
+<div class="stage">
+ <div class="topbar"><span class="live"><i></i><span data-i18n="intro.live"></span></span><span class="eta" data-i18n="intro.eta"></span><span id="langhost"></span></div>
+
+<!-- Main area: step 1 business form (built by app.js), step 2 channel tabs and forms, and the progress side panel -->
+<main id="main"><div class="wrap">
+ <div class="layout">
+  <div class="col">
+   <section class="card bi" id="bi" data-i18n-attr="aria-label:bi.title"><div class="sk" id="sk" role="status"><span class="sr" data-i18n="loading"></span><i class="t"></i><div class="r"><i></i><i></i></div><div class="r"><i></i><i></i></div></div></section>
+   <div class="stephead locked" id="step2"><div><h2 data-i18n="step2.title"></h2><p data-i18n="step2.text"></p></div></div>
+   <div class="tabs locked" role="tablist" data-i18n-attr="aria-label:tabs.label" id="tabs"><span class="tab-sk"></span><span class="tab-sk"></span><span class="tab-sk"></span></div>
+   <div class="card" id="panels"><div class="lock" id="lock"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg><h3 data-i18n="lock.title"></h3><p data-i18n="lock.text"></p></div></div>
+  </div>
+ </div>
+</div></main>
+
+<footer><div class="wrap"><span data-i18n="footer.copy"></span></div></footer>
+</div></div>
+
+<!-- Dialogs. Welcome shows once per browser; busy overlay covers submission; the others confirm actions. -->
+<dialog id="welcome" aria-labelledby="wt"><div class="dlg wl">
+ <div class="pi" aria-hidden="true">Pi</div>
+ <h2 id="wt" data-i18n="welcome.title"></h2>
+ <p data-i18n="welcome.text"></p>
+ <ol class="wsteps">
+  <li><b>1</b><span><strong data-i18n="welcome.1.title"></strong><small data-i18n="welcome.1.text"></small></span></li>
+  <li><b>2</b><span><strong data-i18n="welcome.2.title"></strong><small data-i18n="welcome.2.text"></small></span></li>
+  <li><b>3</b><span><strong data-i18n="welcome.3.title"></strong><small data-i18n="welcome.3.text"></small></span></li>
+ </ol>
+ <button class="submit" id="wgo" type="button" data-i18n="welcome.go"></button>
+</div></dialog>
+
+<div class="busy" id="busy" hidden role="alertdialog" aria-modal="true" aria-labelledby="bt" aria-describedby="bd">
+ <div class="bcard"><div class="ring" aria-hidden="true"></div><h2 id="bt" data-i18n="busy.title"></h2><p id="bd" data-i18n="busy.text"></p>
+ <p class="bslow" id="bslow" data-i18n="busy.slow" hidden></p></div>
+</div>
+
+<dialog id="needbi" aria-labelledby="nbt"><div class="dlg">
+ <div class="lockic" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg></div>
+ <h2 id="nbt" data-i18n="needbi.title"></h2>
+ <p data-i18n="needbi.text"></p>
+ <button class="submit" id="nbgo" type="button" data-i18n="needbi.go"></button>
+</div></dialog>
+
+<dialog id="clear" aria-labelledby="ct"><div class="dlg">
+ <h2 id="ct" data-i18n="clear.title"></h2>
+ <p data-i18n="clear.form"></p>
+ <div class="btnrow"><button class="clear" id="cno" type="button" data-i18n="clear.cancel"></button><button class="submit" id="cyes" type="button" data-i18n="btn.clearForm"></button></div>
+</div></dialog>
+
+<dialog id="done" aria-labelledby="dt"><div class="dlg dn">
+ <div class="tick"><svg width="34" height="34" viewBox="0 0 34 34" fill="none" stroke="#14a05a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 17.5l6.5 6.5L26 11"/></svg></div>
+ <h2 id="dt" data-i18n="done.title"></h2>
+ <p data-i18n="done.text"></p>
+ <p class="dnote" id="dnote" hidden></p>
+ <div class="dnext"><h3 data-i18n="done.next.title"></h3><ol><li data-i18n="done.next.1"></li><li data-i18n="done.next.2"></li><li data-i18n="done.next.3"></li></ol></div>
+ <button class="submit" id="ok" type="button" data-i18n="done.ok"></button>
+</div></dialog>
+</body>
+</html>
