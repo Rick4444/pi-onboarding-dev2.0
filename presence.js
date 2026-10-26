@@ -9,7 +9,7 @@
      f is 1 if the visitor typed or chose something in the last 60 seconds ("filling").
    - Each tab also reads the latest entries and counts those whose time is within STALE_MS of the newest one.
      Using the database's own clock means different phones with wrong clocks still count correctly.
-   - When a tab closes it deletes its entry; entries that are not refreshed simply fall out of the count.
+   - One browser = one id (kept 12 hours), so refreshes and extra tabs do not add to the count. A closed page drops out within about a minute.
    ===================================================================== */
 (function () {
   "use strict";
@@ -24,17 +24,34 @@
   var host = document.getElementById("presence");
   if (!host) return;
 
-  var id = "";
-  try { var a = new Uint8Array(9); crypto.getRandomValues(a); id = Array.prototype.map.call(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join(""); }
-  catch (e) { id = String(Date.now()) + Math.random().toString(16).slice(2, 10); }
+  /* One id per visitor (browser), kept for 12 hours: refreshing the page or opening more tabs is still ONE person.
+     Only a random string is saved; if storage is blocked, the id lives for this tab only. */
+  var KEY = "pi_presence_" + location.pathname, TYPED = KEY + "_typed", TTL = 12 * 3600 * 1000;
+  function rnd() {
+    try { var a = new Uint8Array(9); crypto.getRandomValues(a); return Array.prototype.map.call(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join(""); }
+    catch (e) { return String(Date.now()) + Math.random().toString(16).slice(2, 10); }
+  }
+  function getId() {
+    var st = null; try { st = window.localStorage; } catch (e) {}
+    if (!st) try { st = window.sessionStorage; } catch (e) {}
+    try {
+      var v = st && JSON.parse(st.getItem(KEY) || "null");
+      if (v && v.id && Date.now() - v.ts < TTL) return v.id;
+      v = { id: rnd(), ts: Date.now() }; if (st) st.setItem(KEY, JSON.stringify(v)); return v.id;
+    } catch (e) { return rnd(); }
+  }
+  var id = getId();
 
-  var lastTyped = 0, timer = 0, gone = false;
-  ["input", "change"].forEach(function (ev) { document.addEventListener(ev, function () { lastTyped = Date.now(); }, true); });
+  var timer = 0, gone = false;
+  /* "last typed" is shared between this visitor's tabs, so two tabs never disagree about "filling" */
+  function markTyped() { try { localStorage.setItem(TYPED, String(Date.now())); } catch (e) { markTyped.m = Date.now(); } }
+  function lastTyped() { try { return Number(localStorage.getItem(TYPED)) || 0; } catch (e) { return markTyped.m || 0; } }
+  ["input", "change"].forEach(function (ev) { document.addEventListener(ev, markTyped, true); });
 
   function url(path, q) { return DB + path + ".json" + (q ? "?" + q : ""); }
 
   function beat() {
-    var filling = lastTyped && Date.now() - lastTyped < 60000 ? 1 : 0;
+    var lt = lastTyped(), filling = lt && Date.now() - lt < 60000 ? 1 : 0;
     return fetch(url("/presence/" + id), { method: "PUT", body: JSON.stringify({ t: { ".sv": "timestamp" }, f: filling }), keepalive: true, cache: "no-store" });
   }
 
@@ -64,10 +81,9 @@
     beat().then(read).catch(function () { host.hidden = true; }).then(function () { timer = setTimeout(tick, BEAT + Math.round(Math.random() * 4000)); });
   }
 
-  function leave() {
-    if (gone) return; gone = true; clearTimeout(timer);
-    try { fetch(url("/presence/" + id), { method: "DELETE", keepalive: true }); } catch (e) {}
-  }
+  /* On close we do NOT delete: a refresh or a second tab would otherwise make the visitor blink out and back in.
+     The entry simply stops being refreshed and drops out of the count within STALE_MS. */
+  function leave() { gone = true; clearTimeout(timer); }
   window.addEventListener("pagehide", leave);
   document.addEventListener("visibilitychange", function () { if (!document.hidden && !gone) { clearTimeout(timer); tick(); } });
   window.addEventListener("pageshow", function (e) { if (e.persisted && gone) { gone = false; tick(); } });
